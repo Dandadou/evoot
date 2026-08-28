@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "evoot",
+  "compatibility_date": "2026-08-28",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "evoot-db",
+      "database_id": "b20c7b1f-50b6-46ef-a552-5f5886cd2b34",
+      "migrations_dir": "migrations"
+    }
+  ]
+}
