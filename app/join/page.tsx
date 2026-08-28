@@ -1,15 +1,18 @@
 'use client';
 
 import Link from 'next/link';
-import { FormEvent, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { FormEvent, useEffect, useState } from 'react';
 
 export default function JoinPage() {
-  const params = useSearchParams();
-  const [code, setCode] = useState((params.get('code') || '').replace(/\D/g, '').slice(0, 6));
+  const [code, setCode] = useState('');
   const [name, setName] = useState('');
   const [jobTitle, setJobTitle] = useState('');
   const [joined, setJoined] = useState(false);
+
+  useEffect(() => {
+    const value = new URLSearchParams(window.location.search).get('code') || '';
+    setCode(value.replace(/\D/g, '').slice(0, 6));
+  }, []);
 
   function submit(e: FormEvent) {
     e.preventDefault();
