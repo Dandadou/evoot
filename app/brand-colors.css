@@ -1,0 +1,6 @@
+:root{--evoot-orange:#F7941D}
+.brand span,.hero em,.eyebrow,.orgBadge span,.trainingNumber,.newTrainingCard strong,.blockIndex,.stageLabel,.builderTools button>b,.coverDrop span,.mediaDrop span,.contentNumber,.liveBadge,.sessionCode,.liveQuestionMeta b,.answerLetter,.answerPercent{color:var(--evoot-orange)!important}
+.primary{background:var(--evoot-orange)!important;border-color:var(--evoot-orange)!important}
+.waitingPulse{border-color:var(--evoot-orange)!important}
+.participantAnswers button:hover{border-color:var(--evoot-orange)!important}
+.responseTrack>div,.answerResultTrack>div{background:var(--evoot-orange)!important}
