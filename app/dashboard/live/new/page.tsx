@@ -1,12 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
 export default function NewLiveSessionPage() {
   const router = useRouter();
-  const [training, setTraining] = useState('comprendre-ses-reactions');
+  const searchParams = useSearchParams();
+  const requested = searchParams.get('training');
+  const [training, setTraining] = useState(requested === 'decouvrir-evoot' ? 'decouvrir-evoot' : 'comprendre-ses-reactions');
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
 
@@ -28,7 +30,7 @@ export default function NewLiveSessionPage() {
     <section className="liveSetupCard">
       <div className="eyebrow">NOUVELLE SÉANCE LIVE</div><h1>Prêt à faire participer le monde?</h1>
       <p>Choisis la formation. ÉVOOT crée ensuite un vrai code à 6 chiffres enregistré dans la séance.</p>
-      <label>Formation<select value={training} onChange={e=>setTraining(e.target.value)}><option value="comprendre-ses-reactions">Comprendre ses réactions</option></select></label>
+      <label>Formation<select value={training} onChange={e=>setTraining(e.target.value)}><option value="decouvrir-evoot">Découvrir ÉVOOT!</option><option value="comprendre-ses-reactions">Comprendre ses réactions</option></select></label>
       {error && <p>{error}</p>}
       <button className="primary liveLaunch" disabled={creating} onClick={createSession}>{creating ? 'Création…' : 'Créer la séance live →'}</button>
     </section>
