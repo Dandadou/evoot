@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
+
+type EvootAIEnv = { OPENAI_API_KEY?: string };
 
 export async function POST(request: Request) {
   try {
     const { question, answers, distribution, objective } = await request.json();
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) return NextResponse.json({ error: 'OPENAI_API_KEY manquante.' }, { status: 500 });
+    const { env } = getCloudflareContext();
+    const apiKey = (env as unknown as EvootAIEnv).OPENAI_API_KEY;
+    if (!apiKey) return NextResponse.json({ error: 'OPENAI_API_KEY manquante dans le runtime Cloudflare.' }, { status: 500 });
 
     const response = await fetch('https://api.openai.com/v1/responses', {
       method: 'POST',
