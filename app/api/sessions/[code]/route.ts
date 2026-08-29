@@ -1,24 +1,42 @@
 import { NextResponse } from 'next/server';
 import { getDB } from '@/lib/db';
 
+type QuestionRow={position:number;stage:string;prompt:string;answers_json:string;why:string;relances_json:string};
+
 export async function GET(_request: Request, context: { params: Promise<{ code: string }> }) {
   const { code } = await context.params;
   const db = getDB();
   const session = await db.prepare('SELECT id, code, training_slug, state, current_question FROM live_sessions WHERE code = ?').bind(code).first<{id:number;code:string;training_slug:string;state:string;current_question:number}>();
   if (!session) return NextResponse.json({ error: 'Séance introuvable.' }, { status: 404 });
 
+  const training = await db.prepare(`SELECT id, slug, title, description FROM trainings
+    WHERE organization_id = 'evolution-pme' AND slug = ?`).bind(session.training_slug).first<{id:number;slug:string;title:string;description:string|null}>();
+  if (!training) return NextResponse.json({ error: 'Formation introuvable.' }, { status: 404 });
+
+  const questionRows = await db.prepare(`SELECT position, stage, prompt, answers_json, why, relances_json FROM training_questions
+    WHERE training_id = ? ORDER BY position`).bind(training.id).all<QuestionRow>();
+  const questions = questionRows.results.map(row => ({
+    position: row.position,
+    stage: row.stage,
+    prompt: row.prompt,
+    answers: JSON.parse(row.answers_json) as string[],
+    why: row.why,
+    relances: JSON.parse(row.relances_json) as string[]
+  }));
+
   const participants = await db.prepare('SELECT id, name, job_title FROM participants WHERE session_id = ? ORDER BY joined_at').bind(session.id).all();
   const responses = await db.prepare(`SELECT answer_index, COUNT(*) AS count FROM responses
     WHERE session_id = ? AND question_index = ? GROUP BY answer_index ORDER BY answer_index`)
     .bind(session.id, session.current_question).all<{answer_index:number;count:number}>();
 
-  const distribution = [0, 0, 0, 0];
+  const answerCount = questions[session.current_question]?.answers.length || 4;
+  const distribution = Array(answerCount).fill(0) as number[];
   for (const row of responses.results) {
     if (row.answer_index >= 0 && row.answer_index < distribution.length) distribution[row.answer_index] = Number(row.count);
   }
   const responseCount = distribution.reduce((sum, count) => sum + count, 0);
 
-  return NextResponse.json({ session, participants: participants.results, responses: { count: responseCount, distribution } });
+  return NextResponse.json({ session, training, questions, participants: participants.results, responses: { count: responseCount, distribution } });
 }
 
 export async function PATCH(request: Request, context: { params: Promise<{ code: string }> }) {
