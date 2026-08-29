@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import {useEffect,useState} from 'react';
+import './scenario-editor.css';
 
 type Question={stage:string;prompt:string;answers:string[];why:string;relances:string[]};
 type BlockType='SECTION'|'TEXT'|'IMAGE'|'VIDEO'|'ACTIVITY'|'SCENARIO'|'LIVE_QUESTION'|'DISCUSSION'|'TRAINER_NOTE'|'BREAK';
