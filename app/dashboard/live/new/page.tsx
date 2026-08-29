@@ -1,16 +1,19 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function NewLiveSessionPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const requested = searchParams.get('training');
-  const [training, setTraining] = useState(requested === 'decouvrir-evoot' ? 'decouvrir-evoot' : 'comprendre-ses-reactions');
+  const [training, setTraining] = useState('comprendre-ses-reactions');
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get('training');
+    if (requested === 'decouvrir-evoot') setTraining('decouvrir-evoot');
+  }, []);
 
   async function createSession() {
     setCreating(true); setError('');
