@@ -3,6 +3,12 @@ import {getDB} from '@/lib/db';
 
 function slugify(value:string){return value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,60)||'nouvelle-formation'}
 
+export async function GET(){
+ const db=getDB();
+ const result=await db.prepare(`SELECT slug,title,description,status,target_duration_minutes AS targetDurationMinutes,delivery_mode AS deliveryMode FROM trainings WHERE organization_id='evolution-pme' ORDER BY id DESC`).all();
+ return NextResponse.json({trainings:result.results||[]});
+}
+
 export async function POST(request:Request){
  const body=await request.json().catch(()=>({}));
  const title=String(body.title||'Nouvelle formation').trim()||'Nouvelle formation';
