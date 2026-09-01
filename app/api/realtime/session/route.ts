@@ -7,7 +7,7 @@ export async function POST(){
     const appId=process.env.EVOOFI_REALTIME_APP_ID;
     const appSecret=process.env.EVOOFI_REALTIME_APP_SECRET;
     if(!appId||!appSecret){
-      return NextResponse.json({error:'Cloudflare Realtime is not configured.'},{status:503});
+      return NextResponse.json({error:'Cloudflare Realtime is not configured.',detail:`missing:${!appId?' APP_ID':''}${!appSecret?' APP_SECRET':''}`.trim()},{status:503});
     }
 
     const response=await fetch(`${REALTIME_BASE}/apps/${encodeURIComponent(appId)}/sessions/new`,{
@@ -17,17 +17,20 @@ export async function POST(){
       cache:'no-store'
     });
 
-    const payload:any=await response.json().catch(()=>({}));
+    const text=await response.text();
+    let payload:any={};
+    try{payload=text?JSON.parse(text):{}}catch{payload={message:text.slice(0,500)}}
     if(!response.ok){
       console.error('Cloudflare Realtime session creation failed',response.status,payload);
-      return NextResponse.json({error:'Unable to open the realtime media connection.'},{status:502});
+      const cloudflareMessage=payload?.errorDescription||payload?.error_description||payload?.error||payload?.message||payload?.errors?.[0]?.message||'Cloudflare rejected the request.';
+      return NextResponse.json({error:'Unable to open the realtime media connection.',detail:`Cloudflare ${response.status}: ${String(cloudflareMessage)}`},{status:502});
     }
 
-    // Only return the ephemeral Realtime session identifier. The App Secret
-    // never leaves the server and must never be exposed to the browser.
-    return NextResponse.json({sessionId:payload.sessionId||payload.session_id||payload.id||null});
-  }catch(error){
+    const sessionId=payload.sessionId||payload.session_id||payload.id;
+    if(!sessionId)return NextResponse.json({error:'Cloudflare created a session but returned no session ID.',detail:'Unexpected Realtime API response.'},{status:502});
+    return NextResponse.json({sessionId});
+  }catch(error:any){
     console.error('Cloudflare Realtime session error',error);
-    return NextResponse.json({error:'Unable to open the realtime media connection.'},{status:500});
+    return NextResponse.json({error:'Unable to open the realtime media connection.',detail:error?.message||'Server fetch failed.'},{status:500});
   }
 }
