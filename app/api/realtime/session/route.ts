@@ -4,8 +4,10 @@ const REALTIME_BASE='https://rtc.live.cloudflare.com/v1';
 
 export async function POST(){
   try{
-    const appId=process.env.EVOOFI_REALTIME_APP_ID;
-    const appSecret=process.env.EVOOFI_REALTIME_APP_SECRET;
+    // Cloudflare secrets can accidentally pick up a trailing space/newline when pasted
+    // in the dashboard. Trim server-side without ever exposing either credential.
+    const appId=process.env.EVOOFI_REALTIME_APP_ID?.trim();
+    const appSecret=process.env.EVOOFI_REALTIME_APP_SECRET?.trim();
     if(!appId||!appSecret){
       return NextResponse.json({error:'Cloudflare Realtime is not configured.',detail:`missing:${!appId?' APP_ID':''}${!appSecret?' APP_SECRET':''}`.trim()},{status:503});
     }
