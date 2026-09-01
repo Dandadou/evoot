@@ -4,7 +4,7 @@ const REALTIME_BASE='https://rtc.live.cloudflare.com/v1';
 
 export async function POST(req:Request){
  try{
-  const appId=process.env.EVOOFI_REALTIME_APP_ID,appSecret=process.env.EVOOFI_REALTIME_APP_SECRET;
+  const appId=process.env.EVOOFI_REALTIME_APP_ID?.trim(),appSecret=process.env.EVOOFI_REALTIME_APP_SECRET?.trim();
   if(!appId||!appSecret)return NextResponse.json({error:'Cloudflare Realtime is not configured.'},{status:503});
   const body=await req.json() as {sessionId?:string;sdp?:string;tracks?:Array<{location:'local'|'remote';mid?:string;trackName?:string;sessionId?:string}>};
   if(!body.sessionId||!body.sdp||!body.tracks?.length)return NextResponse.json({error:'sessionId, sdp and tracks are required.'},{status:400});
