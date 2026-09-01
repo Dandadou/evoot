@@ -1,0 +1,9 @@
+import {NextResponse} from 'next/server';
+
+type Member={id:string;role:'trainer'|'learner';sessionId:string;tracks:Array<{trackName:string;kind:string}>;updatedAt:number};
+const rooms=new Map<string,Map<string,Member>>();
+const TTL=1000*60*60*4;
+function clean(room:Map<string,Member>){const now=Date.now();for(const [id,m] of room)if(now-m.updatedAt>TTL)room.delete(id)}
+export async function GET(req:Request){const u=new URL(req.url),roomId=u.searchParams.get('roomId')||'demo';const room=rooms.get(roomId)||new Map<string,Member>();clean(room);rooms.set(roomId,room);return NextResponse.json({members:[...room.values()]})}
+export async function POST(req:Request){try{const b=await req.json() as {roomId?:string;id?:string;role?:'trainer'|'learner';sessionId?:string;tracks?:Array<{trackName:string;kind:string}>};if(!b.roomId||!b.id||!b.sessionId)return NextResponse.json({error:'roomId, id and sessionId required'},{status:400});const room=rooms.get(b.roomId)||new Map<string,Member>();clean(room);room.set(b.id,{id:b.id,role:b.role||'learner',sessionId:b.sessionId,tracks:b.tracks||[],updatedAt:Date.now()});rooms.set(b.roomId,room);return NextResponse.json({ok:true,members:[...room.values()]})}catch{return NextResponse.json({error:'Invalid room presence'},{status:400})}}
+export async function DELETE(req:Request){const u=new URL(req.url),roomId=u.searchParams.get('roomId')||'',id=u.searchParams.get('id')||'';rooms.get(roomId)?.delete(id);return NextResponse.json({ok:true})}
