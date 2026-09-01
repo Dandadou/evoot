@@ -10,12 +10,12 @@ export async function POST(){
       return NextResponse.json({error:'Cloudflare Realtime is not configured.',detail:`missing:${!appId?' APP_ID':''}${!appSecret?' APP_SECRET':''}`.trim()},{status:503});
     }
 
-    // Cloudflare Realtime sessions/new expects a sessionDescription object.
-    // We create the SFU session first; the browser SDP is negotiated on tracks/new.
+    // Cloudflare's current Realtime SFU echo example creates an empty
+    // PeerConnection session with POST /sessions/new and NO request body.
+    // SDP is negotiated afterwards when local tracks are published.
     const response=await fetch(`${REALTIME_BASE}/apps/${encodeURIComponent(appId)}/sessions/new`,{
       method:'POST',
-      headers:{Authorization:`Bearer ${appSecret}`,'Content-Type':'application/json'},
-      body:JSON.stringify({sessionDescription:{}}),
+      headers:{Authorization:`Bearer ${appSecret}`},
       cache:'no-store'
     });
 
