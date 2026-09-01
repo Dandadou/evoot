@@ -4,18 +4,18 @@ const REALTIME_BASE='https://rtc.live.cloudflare.com/v1';
 
 export async function POST(){
   try{
-    // Cloudflare secrets can accidentally pick up a trailing space/newline when pasted
-    // in the dashboard. Trim server-side without ever exposing either credential.
     const appId=process.env.EVOOFI_REALTIME_APP_ID?.trim();
     const appSecret=process.env.EVOOFI_REALTIME_APP_SECRET?.trim();
     if(!appId||!appSecret){
       return NextResponse.json({error:'Cloudflare Realtime is not configured.',detail:`missing:${!appId?' APP_ID':''}${!appSecret?' APP_SECRET':''}`.trim()},{status:503});
     }
 
+    // Cloudflare Realtime sessions/new expects a sessionDescription object.
+    // We create the SFU session first; the browser SDP is negotiated on tracks/new.
     const response=await fetch(`${REALTIME_BASE}/apps/${encodeURIComponent(appId)}/sessions/new`,{
       method:'POST',
       headers:{Authorization:`Bearer ${appSecret}`,'Content-Type':'application/json'},
-      body:JSON.stringify({}),
+      body:JSON.stringify({sessionDescription:{}}),
       cache:'no-store'
     });
 
