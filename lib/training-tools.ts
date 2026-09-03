@@ -1,6 +1,6 @@
 export type TrainingToolCategory='structure'|'content'|'interaction'|'collaboration'|'facilitation';
 export type TrainingToolVisibility='LIVE'|'SELF_PACED'|'BOTH'|'TRAINER';
-export type TrainingToolType='SECTION'|'TEXT'|'IMAGE'|'VIDEO'|'ACTIVITY'|'SCENARIO'|'LIVE_QUESTION'|'DISCUSSION'|'TRAINER_NOTE'|'BREAK'|'WHITEBOARD'|'INTERACTIVE_BOOK';
+export type TrainingToolType='SECTION'|'TEXT'|'IMAGE'|'VIDEO'|'PRESENTATION'|'ACTIVITY'|'SCENARIO'|'LIVE_QUESTION'|'DISCUSSION'|'TRAINER_NOTE'|'BREAK'|'WHITEBOARD'|'INTERACTIVE_BOOK';
 
 export type TrainingToolDefinition={
   type:TrainingToolType;
@@ -19,6 +19,7 @@ export const TRAINING_TOOLS:Record<TrainingToolType,TrainingToolDefinition>={
   TEXT:{type:'TEXT',label:'Texte / contenu',icon:'T',category:'content',description:'Présente du contenu pédagogique.',defaultVisibility:'BOTH',defaultContent:{text:'',keyPoint:''},capabilities:{live:true,selfPaced:true,collaborative:false,trainerOnly:false},status:'active'},
   IMAGE:{type:'IMAGE',label:'Image',icon:'▧',category:'content',description:'Présente une image avec contexte.',defaultVisibility:'BOTH',defaultContent:{url:'',caption:'',alt:''},capabilities:{live:true,selfPaced:true,collaborative:false,trainerOnly:false},status:'active'},
   VIDEO:{type:'VIDEO',label:'Vidéo',icon:'▶',category:'content',description:'Présente une vidéo dans le scénario.',defaultVisibility:'BOTH',defaultContent:{url:'',intro:'',instructions:''},capabilities:{live:true,selfPaced:true,collaborative:false,trainerOnly:false},status:'active'},
+  PRESENTATION:{type:'PRESENTATION',label:'Présentation PowerPoint',icon:'▣',category:'content',description:'Présente un diaporama PowerPoint directement dans EVOOT sans quitter la formation.',defaultVisibility:'BOTH',defaultContent:{resourceId:'',fileName:'',sourceType:'PPTX',startSlide:1,syncSlide:true,showPresenterNotes:true,allowLearnerNavigation:false},capabilities:{live:true,selfPaced:true,collaborative:false,trainerOnly:false},status:'foundation'},
   ACTIVITY:{type:'ACTIVITY',label:'Activité / exercice',icon:'✦',category:'interaction',description:'Guide une activité pédagogique.',defaultVisibility:'BOTH',defaultContent:{objective:'',instructions:'',materials:'',debrief:''},capabilities:{live:true,selfPaced:true,collaborative:true,trainerOnly:false},status:'active'},
   SCENARIO:{type:'SCENARIO',label:'Scénario',icon:'◇',category:'interaction',description:'Met les participants en situation.',defaultVisibility:'BOTH',defaultContent:{context:'',situation:'',task:'',debrief:''},capabilities:{live:true,selfPaced:true,collaborative:true,trainerOnly:false},status:'active'},
   LIVE_QUESTION:{type:'LIVE_QUESTION',label:'Question ÉVOOT Live',icon:'?',category:'interaction',description:'Question interactive lancée par le formateur.',defaultVisibility:'BOTH',defaultContent:{prompt:'Nouvelle question',answers:['Réponse A','Réponse B','Réponse C','Réponse D'],why:'',relances:['','','']},capabilities:{live:true,selfPaced:true,collaborative:false,trainerOnly:false},status:'active'},
