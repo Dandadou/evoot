@@ -1,0 +1,26 @@
+'use client';
+import {FormEvent,useEffect,useState} from 'react';
+import Link from 'next/link';
+import '../../portals.css';
+
+type Org={id:string;name:string;type:string;status:string;brandingJson:string;members:number};
+const initial={name:'',id:'',type:'BUSINESS',primaryColor:'#F7941D',secondaryColor:'#111111',logoUrl:'',timezone:'America/Toronto',locale:'fr-CA'};
+export default function OrganizationsPage(){
+ const [form,setForm]=useState(initial);const [items,setItems]=useState<Org[]>([]);const [message,setMessage]=useState('');const [saving,setSaving]=useState(false);
+ const load=()=>fetch('/api/evoot-admin/organizations',{cache:'no-store'}).then(r=>r.status===401?(window.location.href='/login',null):r.json()).then(v=>v?.ok&&setItems(v.organizations));
+ useEffect(()=>{load()},[]);
+ const set=(key:string,value:string)=>setForm(v=>({...v,[key]:value}));
+ async function submit(e:FormEvent){e.preventDefault();setSaving(true);setMessage('');const r=await fetch('/api/evoot-admin/organizations',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(form)});const v=await r.json();setSaving(false);if(!r.ok){setMessage(v.error||'Erreur');return}setForm(initial);setMessage('Organisation créée.');load();}
+ return <main className="portal"><div className="portalShell"><div className="portalBrand">ÉV<span>OO</span>T!</div><div className="portalRole">Administration ÉVOOT · Organisations</div><h1>Créer une organisation</h1><p className="portalLead">Chaque client possède son propre espace, ses couleurs et son identité visuelle.</p>
+ <form className="portalCard" onSubmit={submit} style={{display:'grid',gap:14}}><span className="portalTag">IDENTITÉ</span>
+ <label>Nom<input required value={form.name} onChange={e=>set('name',e.target.value)} placeholder="Ex. Brigade dentaire"/></label>
+ <label>Identifiant personnalisé<input value={form.id} onChange={e=>set('id',e.target.value)} placeholder="Automatique si vide"/></label>
+ <label>Type<select value={form.type} onChange={e=>set('type',e.target.value)}><option value="BUSINESS">Entreprise</option><option value="SCHOOL">École</option><option value="ORGANIZATION">Organisation / OBNL</option></select></label>
+ <span className="portalTag">MARQUE</span>
+ <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}><label>Couleur principale<input type="color" value={form.primaryColor} onChange={e=>set('primaryColor',e.target.value)}/></label><label>Couleur secondaire<input type="color" value={form.secondaryColor} onChange={e=>set('secondaryColor',e.target.value)}/></label></div>
+ <label>Logo de l’organisation<input value={form.logoUrl} onChange={e=>set('logoUrl',e.target.value)} placeholder="URL du logo — téléversement arrive ensuite"/></label>
+ <div style={{border:'1px solid #333',borderRadius:16,padding:20,background:form.secondaryColor,color:'#fff'}}><small>APERÇU</small><div style={{display:'flex',alignItems:'center',gap:14,marginTop:10}}>{form.logoUrl&&<img src={form.logoUrl} alt="" style={{maxWidth:100,maxHeight:55,objectFit:'contain'}}/>}<strong style={{fontSize:22,color:form.primaryColor}}>{form.name||'Votre organisation'}</strong></div><p style={{marginBottom:0}}>Propulsé par EVOOT!</p></div>
+ <button className="portalButton" disabled={saving}>{saving?'Création…':'Créer l’organisation'}</button>{message&&<p>{message}</p>}</form>
+ <section style={{marginTop:28}}><span className="portalTag">ORGANISATIONS</span><div className="portalGrid" style={{marginTop:12}}>{items.map(o=>{let b:any={};try{b=JSON.parse(o.brandingJson||'{}')}catch{}return <div className="portalCard" key={o.id} style={{borderTop:`4px solid ${b.primaryColor||'#F7941D'}`}}>{b.logoUrl&&<img src={b.logoUrl} alt="" style={{maxWidth:110,maxHeight:55,objectFit:'contain',marginBottom:12}}/>}<strong>{o.name}</strong><p>{o.type} · {o.members} membre{o.members===1?'':'s'} · {o.status}</p><small>{o.id}</small></div>})}</div></section>
+ <div style={{marginTop:24}}><Link href="/evoot-admin" className="portalButton">← Tableau de bord</Link></div></div></main>;
+}
