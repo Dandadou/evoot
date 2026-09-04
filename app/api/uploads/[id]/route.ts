@@ -9,5 +9,6 @@ export async function GET(_request:NextRequest,{params}:{params:Promise<{id:stri
  if(!auth.isEvootAdmin&&row.organizationId!==auth.organizationId)return NextResponse.json({error:'Accès refusé'},{status:403});
  const object=await getUploadsBucket().get(row.storageKey);if(!object)return NextResponse.json({error:'Fichier introuvable'},{status:404});
  const headers=new Headers();headers.set('Content-Type',row.mimeType||'application/octet-stream');headers.set('Cache-Control','private, max-age=300');headers.set('Content-Disposition',`inline; filename*=UTF-8''${encodeURIComponent(row.originalName)}`);
- return new Response(object.body,{headers});
+ const body=await object.arrayBuffer();
+ return new Response(body,{headers});
 }
