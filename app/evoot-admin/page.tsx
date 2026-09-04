@@ -4,28 +4,12 @@ import Link from 'next/link';
 import '../portals.css';
 
 type Overview={stats:{organizations:number;users:number;memberships:number;subscriptions:number;sessions:number};recentOrganizations:{id:string;name:string;status:string;createdAt:string;members:number}[]};
-
 export default function Page(){
-  const [data,setData]=useState<Overview|null>(null);
-  const [error,setError]=useState('');
-  useEffect(()=>{fetch('/api/evoot-admin/overview',{cache:'no-store'}).then(async r=>{if(r.status===401){window.location.href='/login';return null}if(!r.ok)throw new Error('LOAD_FAILED');return r.json()}).then(v=>{if(v?.ok)setData(v)}).catch(()=>setError('Impossible de charger les données de la plateforme.'));},[]);
-  return <main className="portal"><div className="portalShell">
-    <div className="portalBrand">ÉV<span>OO</span>T!</div><div className="portalRole">Administration ÉVOOT</div>
-    <h1>Contrôle de la plateforme</h1><p className="portalLead">Vue maître d’ÉVOOT : organisations, utilisateurs, abonnements et activité de la plateforme.</p>
-    {error&&<p>{error}</p>}
-    <div className="portalGrid">
-      <Stat t="Organisations" n={data?.stats.organizations} d="Organisations clientes actives ou configurées."/>
-      <Stat t="Utilisateurs actifs" n={data?.stats.users} d="Comptes actifs sur la plateforme."/>
-      <Stat t="Accès actifs" n={data?.stats.memberships} d="Rôles et appartenances aux organisations."/>
-      <Stat t="Abonnements" n={data?.stats.subscriptions} d="Abonnements actuellement actifs."/>
-      <Stat t="Sessions connectées" n={data?.stats.sessions} d="Sessions de connexion non expirées."/>
-      <Card t="Usage & IA" d="Stockage, génération IA et métriques — prochaine couche."/>
-    </div>
-    <section className="portalCard" style={{marginTop:24}}><span className="portalTag">ORGANISATIONS RÉCENTES</span><strong>Clients EVOOT</strong>
-      {!data?<p>Chargement…</p>:data.recentOrganizations.length===0?<p>Aucune organisation cliente pour le moment.</p>:<div style={{display:'grid',gap:10,marginTop:16}}>{data.recentOrganizations.map(o=><div key={o.id} style={{display:'flex',justifyContent:'space-between',gap:16,borderTop:'1px solid #2b2b2b',paddingTop:10}}><span><b>{o.name}</b><br/><small>{o.id}</small></span><span style={{textAlign:'right'}}>{o.members} membre{o.members===1?'':'s'}<br/><small>{o.status}</small></span></div>)}</div>}
-    </section>
-    <div style={{display:'flex',gap:12,flexWrap:'wrap',marginTop:24}}><Link href="/admin" className="portalButton">Portail organisation</Link><Link href="/trainer" className="portalButton">Portail formateur</Link><Link href="/learner" className="portalButton">Portail apprenant</Link></div>
-  </div></main>
-}
+ const [data,setData]=useState<Overview|null>(null);const [error,setError]=useState('');
+ useEffect(()=>{fetch('/api/evoot-admin/overview',{cache:'no-store'}).then(async r=>{if(r.status===401){window.location.href='/login';return null}if(!r.ok)throw new Error('LOAD_FAILED');return r.json()}).then(v=>{if(v?.ok)setData(v)}).catch(()=>setError('Impossible de charger les données de la plateforme.'));},[]);
+ return <main className="portal"><div className="portalShell"><div className="portalBrand">ÉV<span>OO</span>T!</div><div className="portalRole">Administration ÉVOOT</div><h1>Contrôle de la plateforme</h1><p className="portalLead">Vue maître d’ÉVOOT : organisations, utilisateurs, abonnements et activité de la plateforme.</p>{error&&<p>{error}</p>}
+ <div className="portalGrid"><Link href="/evoot-admin/organizations" style={{textDecoration:'none',color:'inherit'}}><Stat t="Organisations" n={data?.stats.organizations} d="Créer, personnaliser et administrer les organisations clientes."/></Link><Stat t="Utilisateurs actifs" n={data?.stats.users} d="Comptes actifs sur la plateforme."/><Stat t="Accès actifs" n={data?.stats.memberships} d="Rôles et appartenances aux organisations."/><Stat t="Abonnements" n={data?.stats.subscriptions} d="Abonnements actuellement actifs."/><Stat t="Sessions connectées" n={data?.stats.sessions} d="Sessions de connexion non expirées."/><Card t="Usage & IA" d="Stockage, génération IA et métriques — prochaine couche."/></div>
+ <section className="portalCard" style={{marginTop:24}}><span className="portalTag">ORGANISATIONS RÉCENTES</span><strong>Clients EVOOT</strong>{!data?<p>Chargement…</p>:data.recentOrganizations.length===0?<p>Aucune organisation cliente pour le moment.</p>:<div style={{display:'grid',gap:10,marginTop:16}}>{data.recentOrganizations.map(o=><div key={o.id} style={{display:'flex',justifyContent:'space-between',gap:16,borderTop:'1px solid #2b2b2b',paddingTop:10}}><span><b>{o.name}</b><br/><small>{o.id}</small></span><span style={{textAlign:'right'}}>{o.members} membre{o.members===1?'':'s'}<br/><small>{o.status}</small></span></div>)}</div>}</section>
+ <div style={{display:'flex',gap:12,flexWrap:'wrap',marginTop:24}}><Link href="/evoot-admin/organizations" className="portalButton">+ Nouvelle organisation</Link><Link href="/admin" className="portalButton">Portail organisation</Link><Link href="/trainer" className="portalButton">Portail formateur</Link><Link href="/learner" className="portalButton">Portail apprenant</Link></div></div></main>}
 function Stat({t,n,d}:{t:string;n:number|undefined;d:string}){return <div className="portalCard"><span className="portalTag">PLATEFORME</span><strong>{t}</strong><div style={{fontSize:34,fontWeight:900,margin:'8px 0'}}>{n??'—'}</div><p>{d}</p></div>}
 function Card({t,d}:{t:string;d:string}){return <div className="portalCard"><span className="portalTag">PLATEFORME</span><strong>{t}</strong><p>{d}</p></div>}
