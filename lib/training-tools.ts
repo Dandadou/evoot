@@ -15,6 +15,8 @@ export type TrainingToolDefinition={
   status:'active'|'foundation';
 };
 
+export type TrainingToolBlock={type:TrainingToolType;title:string;content:Record<string,unknown>;durationMinutes:number|null;visibility:TrainingToolVisibility};
+
 export const PRESENTATION_SOURCE_TYPES:Record<PresentationSourceType,{label:string;accept:string;mode:'UPLOAD'|'LINK'}>={
   PPTX:{label:'PowerPoint (.pptx)',accept:'.pptx',mode:'UPLOAD'},
   PPT:{label:'PowerPoint ancien (.ppt)',accept:'.ppt',mode:'UPLOAD'},
@@ -41,5 +43,8 @@ export const TRAINING_TOOLS:Record<TrainingToolType,TrainingToolDefinition>={
 };
 
 export const TRAINING_TOOL_TYPES=Object.keys(TRAINING_TOOLS) as TrainingToolType[];
+export const TRAINING_TOOL_PALETTE=TRAINING_TOOL_TYPES.map(type=>TRAINING_TOOLS[type]);
 export const getTrainingTool=(type:TrainingToolType)=>TRAINING_TOOLS[type];
-export const createTrainingToolBlock=(type:TrainingToolType)=>{const tool=getTrainingTool(type);return {type,title:tool.label,content:structuredClone(tool.defaultContent),durationMinutes:null,visibility:tool.defaultVisibility};};
+const cloneContent=(content:Record<string,unknown>)=>JSON.parse(JSON.stringify(content)) as Record<string,unknown>;
+export const createTrainingToolBlock=(type:TrainingToolType):TrainingToolBlock=>{const tool=getTrainingTool(type);return {type,title:tool.label,content:cloneContent(tool.defaultContent),durationMinutes:null,visibility:tool.defaultVisibility};};
+export const hydrateTrainingToolBlock=(block:TrainingToolBlock):TrainingToolBlock=>{const tool=getTrainingTool(block.type);return {...block,title:block.title||tool.label,content:{...cloneContent(tool.defaultContent),...(block.content||{})},visibility:block.visibility||tool.defaultVisibility};};
