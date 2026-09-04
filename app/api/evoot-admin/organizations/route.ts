@@ -34,3 +34,22 @@ export async function POST(request:NextRequest){
     return NextResponse.json({error:'Impossible de créer l’organisation. Vérifie que son identifiant est unique.'},{status:500});
   }
 }
+
+export async function DELETE(request:NextRequest){
+  try{
+    await requireEvootAdmin();
+    const body=await request.json() as {id?:string};
+    const id=body.id?.trim();
+    if(!id)return NextResponse.json({error:'Organisation requise'},{status:400});
+    if(id==='evoot')return NextResponse.json({error:'L’organisation système EVOOT ne peut pas être supprimée'},{status:403});
+    const db=getDB();
+    const org=await db.prepare(`SELECT id,name FROM organizations WHERE id=?`).bind(id).first<{id:string;name:string}>();
+    if(!org)return NextResponse.json({error:'Organisation introuvable'},{status:404});
+    await db.prepare(`DELETE FROM organizations WHERE id=?`).bind(id).run();
+    return NextResponse.json({ok:true,id,name:org.name});
+  }catch(error){
+    if(error instanceof Error&&error.message==='UNAUTHORIZED')return NextResponse.json({error:'Non autorisé'},{status:401});
+    console.error('Delete organization failed',error);
+    return NextResponse.json({error:'Impossible de supprimer l’organisation'},{status:500});
+  }
+}
