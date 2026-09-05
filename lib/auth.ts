@@ -51,12 +51,13 @@ export async function getAuthContext():Promise<AuthContext|null>{
   `).bind(session.userId).all<{organizationId:string;role:EvootRole}>();
 
   const all=memberships.results||[];
-  // EVOOT_ADMIN is a platform permission and is intentionally separate from
-  // customer organization role inheritance.
   const isEvootAdmin=all.some(m=>m.organizationId==='evoot'&&m.role==='EVOOT_ADMIN');
-  const orgRoles=session.organizationId
-    ? all.filter(m=>m.organizationId===session.organizationId&&m.role!=='EVOOT_ADMIN').map(m=>m.role)
-    : [];
+  const internalEvootContext=isEvootAdmin&&session.organizationId==='evoot';
+  const orgRoles:EvootRole[]=internalEvootContext
+    ? ['EVOOT_ADMIN','ORG_ADMIN','TRAINER','LEARNER']
+    : session.organizationId
+      ? all.filter(m=>m.organizationId===session.organizationId&&m.role!=='EVOOT_ADMIN').map(m=>m.role)
+      : [];
 
   await db.prepare('UPDATE auth_sessions SET last_seen_at=CURRENT_TIMESTAMP WHERE id=?').bind(session.sessionId).run();
 
