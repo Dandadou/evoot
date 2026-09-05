@@ -2,8 +2,11 @@ import {NextResponse} from 'next/server';
 import {getDB} from '@/lib/db';
 import {requireOrganizationRole} from '@/lib/auth';
 
-async function sessionForTrainer(db:any,org:string,userId:number,isAdmin:boolean,sessionId:number){
- return db.prepare(`SELECT cs.id,cs.training_id trainingId FROM course_sessions cs WHERE cs.id=? AND cs.organization_id=? AND (cs.trainer_user_id=? OR ?=1)`).bind(sessionId,org,userId,isAdmin?1:0).first<any>();
+type TrainerSession={id:number;trainingId:number};
+async function sessionForTrainer(db:any,org:string,userId:number,isAdmin:boolean,sessionId:number):Promise<TrainerSession|null>{
+ const row=await db.prepare(`SELECT cs.id,cs.training_id trainingId FROM course_sessions cs WHERE cs.id=? AND cs.organization_id=? AND (cs.trainer_user_id=? OR ?=1)`).bind(sessionId,org,userId,isAdmin?1:0).first();
+ if(!row)return null;
+ return row as TrainerSession;
 }
 export async function PATCH(req:Request){try{const auth=await requireOrganizationRole('TRAINER');const db=getDB(),org=auth.organizationId!,b=await req.json(),sessionId=Number(b.sessionId);if(!sessionId)return NextResponse.json({error:'Séance requise'},{status:400});const s=await sessionForTrainer(db,org,auth.userId,auth.roles.includes('ORG_ADMIN'),sessionId);if(!s)return NextResponse.json({error:'Séance introuvable'},{status:404});
  if(b.action==='block'){const position=Math.max(0,Number(b.position)||0);const block=await db.prepare(`SELECT id FROM training_blocks WHERE training_id=? AND position=?`).bind(s.trainingId,position).first();if(!block)return NextResponse.json({error:'Bloc introuvable'},{status:404});await db.prepare(`INSERT INTO course_session_state(course_session_id,organization_id,active_block_position,updated_by_user_id,updated_at) VALUES(?,?,?,?,CURRENT_TIMESTAMP) ON CONFLICT(course_session_id) DO UPDATE SET active_block_position=excluded.active_block_position,updated_by_user_id=excluded.updated_by_user_id,updated_at=CURRENT_TIMESTAMP`).bind(sessionId,org,position,auth.userId).run();}
